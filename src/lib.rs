@@ -4,6 +4,7 @@
 extern crate libc;
 extern crate gmp;
 extern crate rustc_serialize;
+extern crate serde;
 
 macro_rules! gen_overloads_inner {
     ($tr:ident, $meth:ident, $T:ident) => {
@@ -42,6 +43,3 @@ macro_rules! mpfr {
 }
 
 pub mod mpfr;
-
-#[cfg(test)]
-mod test;

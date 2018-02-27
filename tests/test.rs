@@ -1,5 +1,10 @@
+#[macro_use]
+extern crate rust_mpfr;
+extern crate gmp;
+extern crate rustc_serialize;
+
 use rustc_serialize::json;
-use super::mpfr::Mpfr;
+use rust_mpfr::mpfr::Mpfr;
 use gmp::mpz::Mpz;
 
 #[test]
