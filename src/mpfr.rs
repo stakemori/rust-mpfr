@@ -41,7 +41,7 @@ pub type mpfr_srcptr = *const mpfr_struct;
 pub type mpfr_ptr = *mut mpfr_struct;
 
 #[link(name = "mpfr")]
-extern {
+extern "C" {
     // Initialization
     fn mpfr_init(x: mpfr_ptr);
     fn mpfr_init2(x: mpfr_ptr, prec: mpfr_prec_t);
@@ -134,21 +134,23 @@ impl fmt::Display for Mpfr {
             let length = mpfr_snprintf(ptr::null(), 0, b"%.Re\0".as_ptr(), &self.mpfr);
             if length < 0 {
                 // Maybe fmt.write_str("@uninnitialized@")
-                return Ok(())
+                return Ok(());
             }
             let buff: Vec<c_char> = Vec::with_capacity((length + 1) as usize);
-            mpfr_snprintf(buff.as_ptr(),
-                          (length + 1) as size_t,
-                          b"%.Re\0".as_ptr(),
-                          &self.mpfr);
+            mpfr_snprintf(
+                buff.as_ptr(),
+                (length + 1) as size_t,
+                b"%.Re\0".as_ptr(),
+                &self.mpfr,
+            );
             let s = CStr::from_ptr(buff.as_ptr());
             fmt.write_str(str::from_utf8_unchecked(s.to_bytes()))
         }
     }
 }
 
-unsafe impl Send for Mpfr { }
-unsafe impl Sync for Mpfr { }
+unsafe impl Send for Mpfr {}
+unsafe impl Sync for Mpfr {}
 
 impl Drop for Mpfr {
     fn drop(&mut self) {
@@ -188,10 +190,13 @@ impl Mpfr {
         };
         unsafe {
             let mut mpfr = Mpfr::new();
-            if mpfr_set_str(&mut mpfr.mpfr,
-                            c_string.as_ptr(),
-                            base as c_int,
-                            mpfr_rnd_t::MPFR_RNDN) == 0 {
+            if mpfr_set_str(
+                &mut mpfr.mpfr,
+                c_string.as_ptr(),
+                base as c_int,
+                mpfr_rnd_t::MPFR_RNDN,
+            ) == 0
+            {
                 Some(mpfr)
             } else {
                 None
@@ -206,10 +211,13 @@ impl Mpfr {
         };
         unsafe {
             let mut mpfr = Mpfr::new2(precision);
-            if mpfr_set_str(&mut mpfr.mpfr,
-                            c_string.as_ptr(),
-                            base as c_int,
-                            mpfr_rnd_t::MPFR_RNDN) == 0 {
+            if mpfr_set_str(
+                &mut mpfr.mpfr,
+                c_string.as_ptr(),
+                base as c_int,
+                mpfr_rnd_t::MPFR_RNDN,
+            ) == 0
+            {
                 Some(mpfr)
             } else {
                 None
@@ -226,10 +234,12 @@ impl Mpfr {
     pub fn new_u64_2exp(base: u64, exp: i32) -> Mpfr {
         unsafe {
             let mut mpfr = Mpfr::new();
-            mpfr_set_ui_2exp(&mut mpfr.mpfr,
-                             base as c_ulong,
-                             exp as mpfr_exp_t,
-                             mpfr_rnd_t::MPFR_RNDN);
+            mpfr_set_ui_2exp(
+                &mut mpfr.mpfr,
+                base as c_ulong,
+                exp as mpfr_exp_t,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             mpfr
         }
     }
@@ -237,10 +247,12 @@ impl Mpfr {
     pub fn new_i64_2exp(base: i64, exp: i32) -> Mpfr {
         unsafe {
             let mut mpfr = Mpfr::new();
-            mpfr_set_si_2exp(&mut mpfr.mpfr,
-                             base as c_long,
-                             exp as mpfr_exp_t,
-                             mpfr_rnd_t::MPFR_RNDN);
+            mpfr_set_si_2exp(
+                &mut mpfr.mpfr,
+                base as c_long,
+                exp as mpfr_exp_t,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             mpfr
         }
     }
@@ -248,10 +260,12 @@ impl Mpfr {
     pub fn new_mpz_2exp(base: &Mpz, exp: i32) -> Mpfr {
         unsafe {
             let mut mpfr = Mpfr::new();
-            mpfr_set_z_2exp(&mut mpfr.mpfr,
-                            base.inner(),
-                            exp as mpfr_exp_t,
-                            mpfr_rnd_t::MPFR_RNDN);
+            mpfr_set_z_2exp(
+                &mut mpfr.mpfr,
+                base.inner(),
+                exp as mpfr_exp_t,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             mpfr
         }
     }
@@ -347,10 +361,12 @@ impl Mpfr {
     pub fn root(&self, k: u64) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(self.get_prec());
-            mpfr_root(&mut res.mpfr,
-                      &self.mpfr,
-                      k as c_ulong,
-                      mpfr_rnd_t::MPFR_RNDN);
+            mpfr_root(
+                &mut res.mpfr,
+                &self.mpfr,
+                k as c_ulong,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
@@ -358,10 +374,12 @@ impl Mpfr {
     pub fn pow(&self, other: &Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(self.get_prec());
-            mpfr_pow(&mut res.mpfr,
-                     &self.mpfr,
-                     &other.mpfr,
-                     mpfr_rnd_t::MPFR_RNDN);
+            mpfr_pow(
+                &mut res.mpfr,
+                &self.mpfr,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
@@ -415,7 +433,7 @@ impl Mpfr {
     }
 }
 
-impl Eq for Mpfr { }
+impl Eq for Mpfr {}
 impl PartialEq for Mpfr {
     fn eq(&self, other: &Mpfr) -> bool {
         unsafe { mpfr_cmp(&self.mpfr, &other.mpfr) == 0 }
@@ -556,10 +574,12 @@ impl<'a, 'b> Add<&'a Mpfr> for &'b Mpfr {
     fn add(self, other: &Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(cmp::max(self.get_prec(), other.get_prec()));
-            mpfr_add(&mut res.mpfr,
-                     &self.mpfr,
-                     &other.mpfr,
-                     mpfr_rnd_t::MPFR_RNDN);
+            mpfr_add(
+                &mut res.mpfr,
+                &self.mpfr,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
@@ -573,122 +593,140 @@ impl<'a> Add<&'a Mpfr> for Mpfr {
             return &self + other;
         }
         unsafe {
-            mpfr_add(&mut self.mpfr,
-                     &self.mpfr,
-                     &other.mpfr,
-                     mpfr_rnd_t::MPFR_RNDN);
+            mpfr_add(
+                &mut self.mpfr,
+                &self.mpfr,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             self
         }
     }
 }
 
 impl Add<Mpfr> for f64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn add(self, other: Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_add_d(&mut res.mpfr,
-                       &other.mpfr,
-                       self as c_double,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_add_d(
+                &mut res.mpfr,
+                &other.mpfr,
+                self as c_double,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl<'a> Add<&'a Mpfr> for f64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn add(self, other: &'a Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_add_d(&mut res.mpfr,
-                       &other.mpfr,
-                       self as c_double,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_add_d(
+                &mut res.mpfr,
+                &other.mpfr,
+                self as c_double,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl Add<f64> for Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     #[inline]
     fn add(mut self, other: f64) -> Mpfr {
         unsafe {
-            mpfr_add_d(&mut self.mpfr,
-                       &self.mpfr,
-                       other as c_double,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_add_d(
+                &mut self.mpfr,
+                &self.mpfr,
+                other as c_double,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             self
         }
     }
 }
 
 impl<'a> Add<f64> for &'a Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn add(self, other: f64) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(self.get_prec());
-            mpfr_add_d(&mut res.mpfr,
-                       &self.mpfr,
-                       other as c_double,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_add_d(
+                &mut res.mpfr,
+                &self.mpfr,
+                other as c_double,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl Add<Mpfr> for i64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn add(self, other: Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_add_si(&mut res.mpfr,
-                        &other.mpfr,
-                        self as c_long,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_add_si(
+                &mut res.mpfr,
+                &other.mpfr,
+                self as c_long,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl<'a> Add<&'a Mpfr> for i64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn add(self, other: &'a Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_add_si(&mut res.mpfr,
-                        &other.mpfr,
-                        self as c_long,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_add_si(
+                &mut res.mpfr,
+                &other.mpfr,
+                self as c_long,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl Add<i64> for Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     #[inline]
     fn add(mut self, other: i64) -> Mpfr {
         unsafe {
-            mpfr_add_si(&mut self.mpfr,
-                        &self.mpfr,
-                        other as c_long,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_add_si(
+                &mut self.mpfr,
+                &self.mpfr,
+                other as c_long,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             self
         }
     }
 }
 
 impl<'a> Add<i64> for &'a Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn add(self, other: i64) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(self.get_prec());
-            mpfr_add_si(&mut res.mpfr,
-                        &self.mpfr,
-                        other as c_long,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_add_si(
+                &mut res.mpfr,
+                &self.mpfr,
+                other as c_long,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
@@ -709,10 +747,12 @@ impl<'a, 'b> Sub<&'a Mpfr> for &'b Mpfr {
     fn sub(self, other: &Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(cmp::max(self.get_prec(), other.get_prec()));
-            mpfr_sub(&mut res.mpfr,
-                     &self.mpfr,
-                     &other.mpfr,
-                     mpfr_rnd_t::MPFR_RNDN);
+            mpfr_sub(
+                &mut res.mpfr,
+                &self.mpfr,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
@@ -726,122 +766,140 @@ impl<'a> Sub<&'a Mpfr> for Mpfr {
             return &self - other;
         }
         unsafe {
-            mpfr_sub(&mut self.mpfr,
-                     &self.mpfr,
-                     &other.mpfr,
-                     mpfr_rnd_t::MPFR_RNDN);
+            mpfr_sub(
+                &mut self.mpfr,
+                &self.mpfr,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             self
         }
     }
 }
 
 impl Sub<Mpfr> for f64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn sub(self, other: Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_d_sub(&mut res.mpfr,
-                       self as c_double,
-                       &other.mpfr,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_d_sub(
+                &mut res.mpfr,
+                self as c_double,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl<'a> Sub<&'a Mpfr> for f64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn sub(self, other: &'a Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_d_sub(&mut res.mpfr,
-                       self as c_double,
-                       &other.mpfr,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_d_sub(
+                &mut res.mpfr,
+                self as c_double,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl Sub<f64> for Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     #[inline]
     fn sub(mut self, other: f64) -> Mpfr {
         unsafe {
-            mpfr_sub_d(&mut self.mpfr,
-                       &self.mpfr,
-                       other as c_double,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_sub_d(
+                &mut self.mpfr,
+                &self.mpfr,
+                other as c_double,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             self
         }
     }
 }
 
 impl<'a> Sub<f64> for &'a Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn sub(self, other: f64) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(self.get_prec());
-            mpfr_sub_d(&mut res.mpfr,
-                       &self.mpfr,
-                       other as c_double,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_sub_d(
+                &mut res.mpfr,
+                &self.mpfr,
+                other as c_double,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl Sub<Mpfr> for i64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn sub(self, other: Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_si_sub(&mut res.mpfr,
-                        self as c_long,
-                        &other.mpfr,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_si_sub(
+                &mut res.mpfr,
+                self as c_long,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl<'a> Sub<&'a Mpfr> for i64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn sub(self, other: &'a Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_si_sub(&mut res.mpfr,
-                        self as c_long,
-                        &other.mpfr,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_si_sub(
+                &mut res.mpfr,
+                self as c_long,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl Sub<i64> for Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     #[inline]
     fn sub(mut self, other: i64) -> Mpfr {
         unsafe {
-            mpfr_sub_si(&mut self.mpfr,
-                        &self.mpfr,
-                        other as c_long,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_sub_si(
+                &mut self.mpfr,
+                &self.mpfr,
+                other as c_long,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             self
         }
     }
 }
 
 impl<'a> Sub<i64> for &'a Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn sub(self, other: i64) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(self.get_prec());
-            mpfr_sub_si(&mut res.mpfr,
-                        &self.mpfr,
-                        other as c_long,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_sub_si(
+                &mut res.mpfr,
+                &self.mpfr,
+                other as c_long,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
@@ -862,10 +920,12 @@ impl<'a, 'b> Mul<&'a Mpfr> for &'b Mpfr {
     fn mul(self, other: &Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(cmp::max(self.get_prec(), other.get_prec()));
-            mpfr_mul(&mut res.mpfr,
-                     &self.mpfr,
-                     &other.mpfr,
-                     mpfr_rnd_t::MPFR_RNDN);
+            mpfr_mul(
+                &mut res.mpfr,
+                &self.mpfr,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
@@ -880,122 +940,140 @@ impl<'a> Mul<&'a Mpfr> for Mpfr {
             return &self * other;
         }
         unsafe {
-            mpfr_mul(&mut self.mpfr,
-                     &self.mpfr,
-                     &other.mpfr,
-                     mpfr_rnd_t::MPFR_RNDN);
+            mpfr_mul(
+                &mut self.mpfr,
+                &self.mpfr,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             self
         }
     }
 }
 
 impl Mul<Mpfr> for f64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn mul(self, other: Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_mul_d(&mut res.mpfr,
-                       &other.mpfr,
-                       self as c_double,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_mul_d(
+                &mut res.mpfr,
+                &other.mpfr,
+                self as c_double,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl<'a> Mul<&'a Mpfr> for f64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn mul(self, other: &'a Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_mul_d(&mut res.mpfr,
-                       &other.mpfr,
-                       self as c_double,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_mul_d(
+                &mut res.mpfr,
+                &other.mpfr,
+                self as c_double,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl Mul<f64> for Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     #[inline]
     fn mul(mut self, other: f64) -> Mpfr {
         unsafe {
-            mpfr_mul_d(&mut self.mpfr,
-                       &self.mpfr,
-                       other as c_double,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_mul_d(
+                &mut self.mpfr,
+                &self.mpfr,
+                other as c_double,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             self
         }
     }
 }
 
 impl<'a> Mul<f64> for &'a Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn mul(self, other: f64) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(self.get_prec());
-            mpfr_mul_d(&mut res.mpfr,
-                       &self.mpfr,
-                       other as c_double,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_mul_d(
+                &mut res.mpfr,
+                &self.mpfr,
+                other as c_double,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl Mul<Mpfr> for i64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn mul(self, other: Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_mul_si(&mut res.mpfr,
-                        &other.mpfr,
-                        self as c_long,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_mul_si(
+                &mut res.mpfr,
+                &other.mpfr,
+                self as c_long,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl<'a> Mul<&'a Mpfr> for i64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn mul(self, other: &'a Mpfr) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_mul_si(&mut res.mpfr,
-                        &other.mpfr,
-                        self as c_long,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_mul_si(
+                &mut res.mpfr,
+                &other.mpfr,
+                self as c_long,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl Mul<i64> for Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     #[inline]
     fn mul(mut self, other: i64) -> Mpfr {
         unsafe {
-            mpfr_mul_si(&mut self.mpfr,
-                        &self.mpfr,
-                        other as c_long,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_mul_si(
+                &mut self.mpfr,
+                &self.mpfr,
+                other as c_long,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             self
         }
     }
 }
 
 impl<'a> Mul<i64> for &'a Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn mul(self, other: i64) -> Mpfr {
         unsafe {
             let mut res = Mpfr::new2(self.get_prec());
-            mpfr_mul_si(&mut res.mpfr,
-                        &self.mpfr,
-                        other as c_long,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_mul_si(
+                &mut res.mpfr,
+                &self.mpfr,
+                other as c_long,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
@@ -1020,10 +1098,12 @@ impl<'a, 'b> Div<&'a Mpfr> for &'b Mpfr {
             }
 
             let mut res = Mpfr::new2(cmp::max(self.get_prec(), other.get_prec()));
-            mpfr_div(&mut res.mpfr,
-                     &self.mpfr,
-                     &other.mpfr,
-                     mpfr_rnd_t::MPFR_RNDN);
+            mpfr_div(
+                &mut res.mpfr,
+                &self.mpfr,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
@@ -1040,17 +1120,19 @@ impl<'a> Div<&'a Mpfr> for Mpfr {
             if mpfr_cmp_ui(&other.mpfr, 0) == 0 {
                 panic!("divide by zero")
             }
-            mpfr_div(&mut self.mpfr,
-                     &self.mpfr,
-                     &other.mpfr,
-                     mpfr_rnd_t::MPFR_RNDN);
+            mpfr_div(
+                &mut self.mpfr,
+                &self.mpfr,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             self
         }
     }
 }
 
 impl Div<Mpfr> for f64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn div(self, other: Mpfr) -> Mpfr {
         unsafe {
             if mpfr_cmp_ui(&other.mpfr, 0) == 0 {
@@ -1058,17 +1140,19 @@ impl Div<Mpfr> for f64 {
             }
 
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_d_div(&mut res.mpfr,
-                       self as c_double,
-                       &other.mpfr,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_d_div(
+                &mut res.mpfr,
+                self as c_double,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl<'a> Div<&'a Mpfr> for f64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn div(self, other: &'a Mpfr) -> Mpfr {
         unsafe {
             if mpfr_cmp_ui(&other.mpfr, 0) == 0 {
@@ -1076,17 +1160,19 @@ impl<'a> Div<&'a Mpfr> for f64 {
             }
 
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_d_div(&mut res.mpfr,
-                       self as c_double,
-                       &other.mpfr,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_d_div(
+                &mut res.mpfr,
+                self as c_double,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl Div<f64> for Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     #[inline]
     fn div(mut self, other: f64) -> Mpfr {
         unsafe {
@@ -1094,17 +1180,19 @@ impl Div<f64> for Mpfr {
                 panic!("divide by zero")
             }
 
-            mpfr_div_d(&mut self.mpfr,
-                       &self.mpfr,
-                       other as c_double,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_div_d(
+                &mut self.mpfr,
+                &self.mpfr,
+                other as c_double,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             self
         }
     }
 }
 
 impl<'a> Div<f64> for &'a Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn div(self, other: f64) -> Mpfr {
         unsafe {
             if other == 0.0 {
@@ -1112,17 +1200,19 @@ impl<'a> Div<f64> for &'a Mpfr {
             }
 
             let mut res = Mpfr::new2(self.get_prec());
-            mpfr_div_d(&mut res.mpfr,
-                       &self.mpfr,
-                       other as c_double,
-                       mpfr_rnd_t::MPFR_RNDN);
+            mpfr_div_d(
+                &mut res.mpfr,
+                &self.mpfr,
+                other as c_double,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl Div<Mpfr> for i64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn div(self, other: Mpfr) -> Mpfr {
         unsafe {
             if mpfr_cmp_ui(&other.mpfr, 0) == 0 {
@@ -1130,17 +1220,19 @@ impl Div<Mpfr> for i64 {
             }
 
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_si_div(&mut res.mpfr,
-                        self as c_long,
-                        &other.mpfr,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_si_div(
+                &mut res.mpfr,
+                self as c_long,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl<'a> Div<&'a Mpfr> for i64 {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn div(self, other: &'a Mpfr) -> Mpfr {
         unsafe {
             if mpfr_cmp_ui(&other.mpfr, 0) == 0 {
@@ -1148,17 +1240,19 @@ impl<'a> Div<&'a Mpfr> for i64 {
             }
 
             let mut res = Mpfr::new2(other.get_prec());
-            mpfr_si_div(&mut res.mpfr,
-                        self as c_long,
-                        &other.mpfr,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_si_div(
+                &mut res.mpfr,
+                self as c_long,
+                &other.mpfr,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
 }
 
 impl Div<i64> for Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     #[inline]
     fn div(mut self, other: i64) -> Mpfr {
         unsafe {
@@ -1166,17 +1260,19 @@ impl Div<i64> for Mpfr {
                 panic!("divide by zero")
             }
 
-            mpfr_div_si(&mut self.mpfr,
-                        &self.mpfr,
-                        other as c_long,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_div_si(
+                &mut self.mpfr,
+                &self.mpfr,
+                other as c_long,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             self
         }
     }
 }
 
 impl<'a> Div<i64> for &'a Mpfr {
-	type Output = Mpfr;
+    type Output = Mpfr;
     fn div(self, other: i64) -> Mpfr {
         unsafe {
             if other == 0 {
@@ -1184,10 +1280,12 @@ impl<'a> Div<i64> for &'a Mpfr {
             }
 
             let mut res = Mpfr::new2(self.get_prec());
-            mpfr_div_si(&mut res.mpfr,
-                        &self.mpfr,
-                        other as c_long,
-                        mpfr_rnd_t::MPFR_RNDN);
+            mpfr_div_si(
+                &mut res.mpfr,
+                &self.mpfr,
+                other as c_long,
+                mpfr_rnd_t::MPFR_RNDN,
+            );
             res
         }
     }
