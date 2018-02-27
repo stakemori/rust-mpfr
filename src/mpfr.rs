@@ -118,7 +118,7 @@ extern "C" {
     fn mpfr_lgamma(rop: mpfr_ptr, op: mpfr_srcptr, rnd: mpfr_rnd_t) -> c_int;
 
     // Formatted output
-    fn mpfr_snprintf(buffer: *const c_char, length: size_t, string: *const u8, ...) -> c_int;
+    fn mpfr_snprintf(buffer: *const c_char, length: size_t, string: *const c_char, ...) -> c_int;
 }
 
 pub struct Mpfr {
@@ -133,21 +133,10 @@ impl fmt::Debug for Mpfr {
 
 impl fmt::Display for Mpfr {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        unsafe {
-            let length = mpfr_snprintf(ptr::null(), 0, b"%.Re\0".as_ptr(), &self.mpfr);
-            if length < 0 {
-                // Maybe fmt.write_str("@uninnitialized@")
-                return Ok(());
-            }
-            let buff: Vec<c_char> = Vec::with_capacity((length + 1) as usize);
-            mpfr_snprintf(
-                buff.as_ptr(),
-                (length + 1) as size_t,
-                b"%.Re\0".as_ptr(),
-                &self.mpfr,
-            );
-            let s = CStr::from_ptr(buff.as_ptr());
-            fmt.write_str(str::from_utf8_unchecked(s.to_bytes()))
+        if let Ok(s) = self.to_fmt_string("%.Re") {
+            fmt.write_str(&s)
+        } else {
+            Err(fmt::Error)
         }
     }
 }
@@ -434,7 +423,34 @@ impl Mpfr {
             res
         }
     }
+
+    pub fn to_fmt_string(&self, template: &str) -> Result<String, FmtStringError> {
+        unsafe {
+            if let Ok(template) = CString::new(template) {
+                let length = mpfr_snprintf(ptr::null(), 0, template.as_ptr(), &self.mpfr);
+                if length < 0 {
+                    return Err(FmtStringError);
+                }
+                let buff: Vec<c_char> = Vec::with_capacity((length + 1) as usize);
+                mpfr_snprintf(
+                    buff.as_ptr(),
+                    (length + 1) as size_t,
+                    template.as_ptr(),
+                    &self.mpfr,
+                );
+                let s = CStr::from_ptr(buff.as_ptr());
+                match s.to_str() {
+                    Ok(s) => Ok(s.to_string()),
+                    _ => Err(FmtStringError),
+                }
+            } else {
+                Err(FmtStringError)
+            }
+        }
+    }
 }
+
+pub struct FmtStringError;
 
 impl Eq for Mpfr {}
 impl PartialEq for Mpfr {
