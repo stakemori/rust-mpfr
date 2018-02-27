@@ -1132,14 +1132,19 @@ impl<'a> Mul<i64> for &'a Mpfr {
 //
 //
 
+macro_rules! div_by_zero_check {
+    ($expr: expr) => {
+        if $expr.is_zero() {
+            panic!("divide by zero")
+        }
+    }
+}
+
 impl<'a, 'b> Div<&'a Mpfr> for &'b Mpfr {
     type Output = Mpfr;
     fn div(self, other: &Mpfr) -> Mpfr {
         unsafe {
-            if mpfr_cmp_ui(&other.mpfr, 0) == 0 {
-                panic!("divide by zero")
-            }
-
+            div_by_zero_check!(other);
             let mut res = Mpfr::new2(cmp::max(self.get_prec(), other.get_prec()));
             mpfr_div(
                 &mut res.mpfr,
@@ -1160,9 +1165,7 @@ impl<'a> Div<&'a Mpfr> for Mpfr {
             return &self / other;
         }
         unsafe {
-            if mpfr_cmp_ui(&other.mpfr, 0) == 0 {
-                panic!("divide by zero")
-            }
+            div_by_zero_check!(other);
             mpfr_div(
                 &mut self.mpfr,
                 &self.mpfr,
@@ -1178,9 +1181,7 @@ impl Div<Mpfr> for f64 {
     type Output = Mpfr;
     fn div(self, other: Mpfr) -> Mpfr {
         unsafe {
-            if mpfr_cmp_ui(&other.mpfr, 0) == 0 {
-                panic!("divide by zero")
-            }
+            div_by_zero_check!(other);
 
             let mut res = Mpfr::new2(other.get_prec());
             mpfr_d_div(
@@ -1198,9 +1199,7 @@ impl<'a> Div<&'a Mpfr> for f64 {
     type Output = Mpfr;
     fn div(self, other: &'a Mpfr) -> Mpfr {
         unsafe {
-            if mpfr_cmp_ui(&other.mpfr, 0) == 0 {
-                panic!("divide by zero")
-            }
+            div_by_zero_check!(other);
 
             let mut res = Mpfr::new2(other.get_prec());
             mpfr_d_div(
@@ -1258,9 +1257,7 @@ impl Div<Mpfr> for i64 {
     type Output = Mpfr;
     fn div(self, other: Mpfr) -> Mpfr {
         unsafe {
-            if mpfr_cmp_ui(&other.mpfr, 0) == 0 {
-                panic!("divide by zero")
-            }
+            div_by_zero_check!(other);
 
             let mut res = Mpfr::new2(other.get_prec());
             mpfr_si_div(
@@ -1278,9 +1275,7 @@ impl<'a> Div<&'a Mpfr> for i64 {
     type Output = Mpfr;
     fn div(self, other: &'a Mpfr) -> Mpfr {
         unsafe {
-            if mpfr_cmp_ui(&other.mpfr, 0) == 0 {
-                panic!("divide by zero")
-            }
+            div_by_zero_check!(other);
 
             let mut res = Mpfr::new2(other.get_prec());
             mpfr_si_div(
