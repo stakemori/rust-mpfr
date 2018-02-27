@@ -10,6 +10,9 @@ repository = "https://github.com/fizyk20/rust-mpfr.git"
 name = "rust_mpfr"
 crate-type = ["rlib", "dylib"]
 
+[build-dependencies]
+cc = "1.0"
+
 [dependencies]
 libc = "0.2"
 rust-gmp = "*"
