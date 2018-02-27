@@ -1,19 +1,19 @@
-use gmp::mpf::{Mpf, mpf_ptr, mpf_srcptr};
-use gmp::mpq::{Mpq, mpq_srcptr};
-use gmp::mpz::{Mpz, mpz_ptr, mpz_srcptr, mp_limb_t};
-use libc::{c_char, c_int, c_ulong, c_long, c_double, size_t};
+use gmp::mpf::{mpf_ptr, mpf_srcptr, Mpf};
+use gmp::mpq::{mpq_srcptr, Mpq};
+use gmp::mpz::{mp_limb_t, mpz_ptr, mpz_srcptr, Mpz};
+use libc::{c_char, c_double, c_int, c_long, c_ulong, size_t};
 use serde::ser::{Serialize, Serializer};
 use serde::{Deserialize, Deserializer};
 use serde::de;
 
 use std::ffi::CStr;
-use std::cmp::{Eq, PartialEq, Ord, PartialOrd, Ordering};
+use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::cmp;
 use std::convert::{From, Into};
 use std::ffi::CString;
 use std::fmt;
 use std::mem::uninitialized;
-use std::ops::{Add, Sub, Mul, Div, Neg};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 use std::str;
 use std::ptr;
 
@@ -23,12 +23,12 @@ type mpfr_exp_t = c_long;
 
 #[repr(C)]
 pub enum mpfr_rnd_t {
-    MPFR_RNDN = 0, // round to nearest, with ties to even
-    MPFR_RNDZ, // round toward zero
-    MPFR_RNDU, // round toward +Inf
-    MPFR_RNDD, // round toward -Inf
-    MPFR_RNDA, // round away from zero
-    MPFR_RNDF, // faithful rounding (not implemented yet)
+    MPFR_RNDN = 0,   // round to nearest, with ties to even
+    MPFR_RNDZ,       // round toward zero
+    MPFR_RNDU,       // round toward +Inf
+    MPFR_RNDD,       // round toward -Inf
+    MPFR_RNDA,       // round away from zero
+    MPFR_RNDF,       // faithful rounding (not implemented yet)
     MPFR_RNDNA = -1, // round to nearest, with ties away from zero (mpfr_rouund)
 }
 

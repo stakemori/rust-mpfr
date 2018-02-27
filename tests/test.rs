@@ -1,6 +1,6 @@
+extern crate gmp;
 #[macro_use]
 extern crate rust_mpfr;
-extern crate gmp;
 
 #[macro_use]
 extern crate serde_derive;
@@ -93,7 +93,6 @@ fn test_add_prec() {
     assert!((&a + 20.0).get_prec() == high_prec);
     assert!((20.0 + &a).get_prec() == high_prec);
 }
-
 
 #[test]
 fn test_sub() {
@@ -395,7 +394,9 @@ fn test_rustc_serialize() {
     struct Test {
         price: Mpfr,
     }
-    let a: Test = Test { price: From::<f64>::from(0.75) };
+    let a: Test = Test {
+        price: From::<f64>::from(0.75),
+    };
     assert_eq!(
         serde_json::to_string(&a).unwrap(),
         "{\"price\":\"7.5e-01\"}"
