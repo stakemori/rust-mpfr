@@ -53,6 +53,7 @@ extern "C" {
     fn mpfr_get_default_prec() -> mpfr_prec_t;
     fn mpfr_set_prec(x: mpfr_ptr, prec: mpfr_prec_t);
     fn mpfr_get_prec(x: mpfr_srcptr) -> mpfr_prec_t;
+    fn mpfr_get_exp(x: mpfr_srcptr) -> mpfr_exp_t;
 
     // Assignment
     fn mpfr_set(rop: mpfr_ptr, op: mpfr_srcptr, rnd: mpfr_rnd_t) -> c_int;
@@ -119,6 +120,13 @@ extern "C" {
 
     // Formatted output
     fn mpfr_snprintf(buffer: *const c_char, length: size_t, string: *const c_char, ...) -> c_int;
+
+    #[link_name = "wrapped_mpfr_nan_p"]
+    fn mpfr_nan_p(x: mpfr_srcptr) -> c_int;
+    #[link_name = "wrapped_mpfr_inf_p"]
+    fn mpfr_inf_p(x: mpfr_srcptr) -> c_int;
+    #[link_name = "wrapped_mpfr_zero_p"]
+    fn mpfr_zero_p(x: mpfr_srcptr) -> c_int;
 }
 
 pub struct Mpfr {
@@ -300,6 +308,10 @@ impl Mpfr {
         unsafe { mpfr_get_prec(&self.mpfr) as usize }
     }
 
+    pub fn get_exp(&self) -> i64 {
+        unsafe { mpfr_get_exp(&self.mpfr) as _ }
+    }
+
     pub fn set_prec(&mut self, precision: usize) {
         unsafe {
             mpfr_set_prec(&mut self.mpfr, precision as mpfr_prec_t);
@@ -447,6 +459,18 @@ impl Mpfr {
                 Err(FmtStringError)
             }
         }
+    }
+
+    pub fn is_nan(&self) -> bool {
+        unsafe { mpfr_nan_p(&self.mpfr) != 0 }
+    }
+
+    pub fn is_zero(&self) -> bool {
+        unsafe { mpfr_zero_p(&self.mpfr) != 0 }
+    }
+
+    pub fn is_infinity(&self) -> bool {
+        unsafe { mpfr_inf_p(&self.mpfr) != 0 }
     }
 }
 
