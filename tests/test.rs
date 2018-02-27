@@ -1,9 +1,11 @@
 #[macro_use]
 extern crate rust_mpfr;
 extern crate gmp;
-extern crate rustc_serialize;
 
-use rustc_serialize::json;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
+
 use rust_mpfr::mpfr::Mpfr;
 use gmp::mpz::Mpz;
 
@@ -389,12 +391,15 @@ fn test_abs() {
 
 #[test]
 fn test_rustc_serialize() {
-    #[derive(RustcDecodable, RustcEncodable, PartialEq)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
     struct Test {
         price: Mpfr,
     }
     let a: Test = Test { price: From::<f64>::from(0.75) };
-    assert_eq!(json::encode(&a).unwrap(), "{\"price\":\"7.5e-01\"}");
-    let b: Test = json::decode("{\"price\": \"0.75\"}").unwrap();
+    assert_eq!(
+        serde_json::to_string(&a).unwrap(),
+        "{\"price\":\"7.5e-01\"}"
+    );
+    let b: Test = serde_json::from_str("{\"price\": \"0.75\"}").unwrap();
     assert!(a == b);
 }

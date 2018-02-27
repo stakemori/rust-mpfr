@@ -3,7 +3,6 @@
 
 extern crate libc;
 extern crate gmp;
-extern crate rustc_serialize;
 extern crate serde;
 
 macro_rules! gen_overloads_inner {

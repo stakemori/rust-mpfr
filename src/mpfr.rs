@@ -2,7 +2,10 @@ use gmp::mpf::{Mpf, mpf_ptr, mpf_srcptr};
 use gmp::mpq::{Mpq, mpq_srcptr};
 use gmp::mpz::{Mpz, mpz_ptr, mpz_srcptr};
 use libc::{c_char, c_int, c_ulong, c_long, c_double, c_void, size_t};
-use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
+use serde::ser::{Serialize, Serializer};
+use serde::{Deserialize, Deserializer};
+use serde::de;
+
 use std::ffi::CStr;
 use std::cmp::{Eq, PartialEq, Ord, PartialOrd, Ordering};
 use std::cmp;
@@ -1317,19 +1320,26 @@ impl Neg for Mpfr {
 
 gen_overloads!(Mpfr);
 
-// rustc_serialize support
-impl Decodable for Mpfr {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        let s = try!(d.read_str());
-        match Mpfr::new_from_str(s, 10) {
-            Some(val) => Ok(val),
-            None => Err(d.error("Cannot parse decimal float")),
-        }
+// serde support
+
+impl Serialize for Mpfr {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        String::serialize(&self.to_string(), serializer)
     }
 }
 
-impl Encodable for Mpfr {
-    fn encode<S: Encoder>(&self, s: &mut S) -> Result<(), S::Error> {
-        s.emit_str(&self.to_string())
+impl<'de> Deserialize<'de> for Mpfr {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        match Mpfr::new_from_str(s, 10) {
+            Some(val) => Ok(val),
+            None => Err(de::Error::custom("Cannot parse decimal float")),
+        }
     }
 }
