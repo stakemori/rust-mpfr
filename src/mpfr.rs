@@ -1,7 +1,7 @@
 use gmp::mpf::{Mpf, mpf_ptr, mpf_srcptr};
 use gmp::mpq::{Mpq, mpq_srcptr};
-use gmp::mpz::{Mpz, mpz_ptr, mpz_srcptr};
-use libc::{c_char, c_int, c_ulong, c_long, c_double, c_void, size_t};
+use gmp::mpz::{Mpz, mpz_ptr, mpz_srcptr, mp_limb_t};
+use libc::{c_char, c_int, c_ulong, c_long, c_double, size_t};
 use serde::ser::{Serialize, Serializer};
 use serde::{Deserialize, Deserializer};
 use serde::de;
@@ -37,7 +37,7 @@ pub struct mpfr_struct {
     _mpfr_prec: mpfr_prec_t,
     _mpfr_sign: mpfr_sign_t,
     _mpfr_exp: mpfr_exp_t,
-    _mpfr_d: *mut c_void,
+    _mpfr_d: *mut mp_limb_t,
 }
 
 pub type mpfr_srcptr = *const mpfr_struct;
