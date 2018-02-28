@@ -461,14 +461,17 @@ impl Mpfr {
         }
     }
 
+    #[inline]
     pub fn is_nan(&self) -> bool {
         unsafe { mpfr_nan_p(&self.mpfr) != 0 }
     }
 
+    #[inline]
     pub fn is_zero(&self) -> bool {
         unsafe { mpfr_zero_p(&self.mpfr) != 0 }
     }
 
+    #[inline]
     pub fn is_infinity(&self) -> bool {
         unsafe { mpfr_inf_p(&self.mpfr) != 0 }
     }
