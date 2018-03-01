@@ -483,6 +483,34 @@ impl Mpfr {
     pub fn is_infinity(&self) -> bool {
         unsafe { mpfr_inf_p(self.as_raw()) != 0 }
     }
+
+    impl_mut_c_wrapper_w_default_rnd!(
+        add_mut,
+        mpfr_add,
+        (x: SelfRef, y: SelfRef),
+        doc = "`self = x + y`"
+    );
+
+    impl_mut_c_wrapper_w_default_rnd!(
+        sub_mut,
+        mpfr_sub,
+        (x: SelfRef, y: SelfRef),
+        doc = "`self = x - y`"
+    );
+
+    impl_mut_c_wrapper_w_default_rnd!(
+        mul_mut,
+        mpfr_mul,
+        (x: SelfRef, y: SelfRef),
+        doc = "`self = x * y`"
+    );
+
+    impl_mut_c_wrapper_w_default_rnd!(
+        div_mut,
+        mpfr_div,
+        (x: SelfRef, y: SelfRef),
+        doc = "`self = x / y`"
+    );
 }
 
 pub struct FmtStringError;
