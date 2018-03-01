@@ -41,4 +41,19 @@ macro_rules! mpfr {
     }
 }
 
+macro_rules! int_to_ord {
+    ($cmp: expr) => {
+        {
+            let cmp = $cmp;
+            if cmp == 0 {
+                Equal
+            } else if cmp < 0 {
+                Less
+            } else {
+                Greater
+            }
+        }
+    }
+}
+
 pub mod mpfr;

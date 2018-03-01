@@ -320,7 +320,7 @@ fn test_mpfr_set_prec() {
 
     a.set_prec(new_prec);
 
-    assert!(a == Mpfr::nan());
+    assert!(a.is_nan());
     assert!(a.get_prec() == new_prec);
 }
 

@@ -7,7 +7,8 @@ use serde::{Deserialize, Deserializer};
 use serde::de;
 
 use std::ffi::CStr;
-use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
+use std::cmp::{Ordering, PartialEq, PartialOrd};
+use self::Ordering::*;
 use std::cmp;
 use std::convert::{From, Into};
 use std::ffi::CString;
@@ -486,29 +487,25 @@ impl Mpfr {
 
 pub struct FmtStringError;
 
-impl Eq for Mpfr {}
 impl PartialEq for Mpfr {
     fn eq(&self, other: &Mpfr) -> bool {
-        unsafe { mpfr_cmp(self.as_raw(), other.as_raw()) == 0 }
-    }
-}
-
-impl Ord for Mpfr {
-    fn cmp(&self, other: &Mpfr) -> Ordering {
-        let cmp = unsafe { mpfr_cmp(self.as_raw(), other.as_raw()) };
-        if cmp == 0 {
-            Ordering::Equal
-        } else if cmp > 0 {
-            Ordering::Greater
+        if self.is_nan() || other.is_nan() {
+            false
         } else {
-            Ordering::Less
+            unsafe { mpfr_cmp(self.as_raw(), other.as_raw()) == 0 }
         }
     }
 }
 
 impl PartialOrd for Mpfr {
     fn partial_cmp(&self, other: &Mpfr) -> Option<Ordering> {
-        Some(self.cmp(other))
+        if self.is_nan() || other.is_nan() {
+            None
+        } else {
+            Some(int_to_ord!(unsafe {
+                mpfr_cmp(self.as_raw(), other.as_raw())
+            }))
+        }
     }
 }
 
