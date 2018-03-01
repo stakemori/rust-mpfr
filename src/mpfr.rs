@@ -14,7 +14,7 @@ use std::convert::{From, Into};
 use std::ffi::CString;
 use std::fmt;
 use std::mem::uninitialized;
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use std::str;
 use std::ptr;
 
@@ -1369,6 +1369,20 @@ impl Neg for Mpfr {
 }
 
 gen_overloads!(Mpfr);
+
+define_assign_c!(Mpfr, AddAssign, add_assign, mpfr_add_si, c_long);
+define_assign_c!(Mpfr, AddAssign, add_assign, mpfr_add_d, c_double);
+define_assign_c!(Mpfr, SubAssign, sub_assign, mpfr_sub_si, c_long);
+define_assign_c!(Mpfr, SubAssign, sub_assign, mpfr_sub_d, c_double);
+define_assign_c!(Mpfr, MulAssign, mul_assign, mpfr_mul_si, c_long);
+define_assign_c!(Mpfr, MulAssign, mul_assign, mpfr_mul_d, c_double);
+define_assign_c!(Mpfr, DivAssign, div_assign, mpfr_div_si, c_long);
+define_assign_c!(Mpfr, DivAssign, div_assign, mpfr_div_d, c_double);
+
+define_assign_wref!(Mpfr, AddAssign, add_assign, mpfr_add, Mpfr);
+define_assign_wref!(Mpfr, SubAssign, sub_assign, mpfr_sub, Mpfr);
+define_assign_wref!(Mpfr, MulAssign, mul_assign, mpfr_mul, Mpfr);
+define_assign_wref!(Mpfr, DivAssign, div_assign, mpfr_div, Mpfr);
 
 // serde support
 
