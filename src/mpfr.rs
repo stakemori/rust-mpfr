@@ -2,21 +2,21 @@ use gmp::mpf::{mpf_ptr, mpf_srcptr, Mpf};
 use gmp::mpq::{mpq_srcptr, Mpq};
 use gmp::mpz::{mp_limb_t, mpz_ptr, mpz_srcptr, Mpz};
 use libc::{c_char, c_double, c_int, c_long, c_ulong, size_t};
+use serde::de;
 use serde::ser::{Serialize, Serializer};
 use serde::{Deserialize, Deserializer};
-use serde::de;
 
-use std::ffi::CStr;
-use std::cmp::{Ordering, PartialEq, PartialOrd};
 use self::Ordering::*;
 use std::cmp;
+use std::cmp::{Ordering, PartialEq, PartialOrd};
 use std::convert::{From, Into};
+use std::ffi::CStr;
 use std::ffi::CString;
 use std::fmt;
 use std::mem::uninitialized;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
-use std::str;
 use std::ptr;
+use std::str;
 
 type mpfr_prec_t = c_long;
 type mpfr_sign_t = c_int;
@@ -1153,11 +1153,11 @@ impl<'a> Mul<i64> for &'a Mpfr {
 //
 
 macro_rules! div_by_zero_check {
-    ($expr: expr) => {
+    ($expr:expr) => {
         if $expr.is_zero() {
             panic!("divide by zero")
         }
-    }
+    };
 }
 
 impl<'a, 'b> Div<&'a Mpfr> for &'b Mpfr {

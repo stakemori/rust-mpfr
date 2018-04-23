@@ -10,7 +10,7 @@ macro_rules! mpfr {
     ($lit:expr) => {
         $crate::mpfr::Mpfr::new_from_str(stringify!($lit), 10)
             .expect("Invalid floating point literal")
-    }
+    };
 }
 
 #[macro_use]
